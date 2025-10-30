@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naruto Chakra Network Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: transparent;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background Image */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://wallpaperaccess.com/full/1327854.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            z-index: -2;
+        }
+
+        /* Dark overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #ff8c00;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            background: rgba(22, 27, 34, 0.85);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #ff8c00;
+            box-shadow: 0 8px 32px rgba(255, 140, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+        
+        .sidebar h2 {
+            color: #ff8c00;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            text-align: center;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ffd700;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(30, 30, 46, 0.8);
+            border: 1px solid #555;
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #ff8c00;
+        }
+        
+        .input-group textarea {
+            resize: vertical;
+            font-size: 0.9em;
+        }
+
+        /* Chakra Speed Slider */
+        .speed-control {
+            background: rgba(30, 30, 46, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ff8c00;
+            margin-bottom: 15px;
+        }
+
+        .speed-control label {
+            display: block;
+            margin-bottom: 10px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speed-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: linear-gradient(90deg, #4ecdc4, #ff6b35);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ffd700;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ff8c00;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
+        .speed-value {
+            color: #ffd700;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .btn-visualize {
+            background: linear-gradient(90deg, #ff8c00, #ff4500);
+            color: white;
+        }
+        
+        .btn-visualize:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 140, 0, 0.5);
+        }
+        
+        .btn-visualize:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-reset {
+            background: rgba(68, 68, 68, 0.8);
+            color: white;
+        }
+        
+        .btn-reset:hover {
+            background: rgba(85, 85, 85, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        .results {
+            margin-top: 20px;
+            background: rgba(20, 20, 30, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ff8c00;
+        }
+        
+        .results h3 {
+            color: #ff8c00;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.6);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-time {
+            font-weight: bold;
+        }
+        
+        .result-time.success {
+            color: #00ff88;
+        }
+        
+        .result-time.error {
+            color: #ff4444;
+        }
+        
+        .canvas-container {
+            background: rgba(0, 0, 0, 0.3); /* More transparent */
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #ff8c00;
+            box-shadow: 0 8px 32px rgba(255, 140, 0, 0.4);
+            backdrop-filter: blur(15px); /* Increased blur */
+        }
+        
+        .canvas-container h2 {
+            color: #ff8c00;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        canvas {
+            width: 100%;
+            height: auto;
+            background: rgba(0, 0, 0, 0.2); /* Almost transparent */
+            border-radius: 10px;
+            display: block;
+            border: 1px solid #ff8c00;
+            backdrop-filter: blur(5px);
+        }
+        
+        .legend {
+            margin-top: 15px;
+            background: rgba(20, 20, 30, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.85em;
+            border: 1px solid #ff8c00;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Chakra Effect Overlay */
+        .chakra-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .chakra-particle {
+            position: absolute;
+            background: radial-gradient(circle, #ffd700, transparent);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Debug info */
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #00ff00;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Debug info -->
+    <div class="debug-info" id="debugInfo">Loading...</div>
+
+    <!-- Chakra Background Particles -->
+    <div class="chakra-overlay" id="chakraOverlay"></div>
+
+    <div class="container">
+        <h1>⚡ Naruto: Nine-Tails Chakra Network ⚡</h1>
+        <p class="subtitle">Dijkstra's Algorithm Visualizer with Speed Control</p>
+        
+        <div class="main-grid">
+            <div class="sidebar">
+                <h2>Network Configuration</h2>
+                
+                <div class="input-group">
+                    <label>Number of Ninjas (N):</label>
+                    <input type="number" id="numNinjas" value="4" min="1" max="40">
+                </div>
+                
+                <div class="input-group">
+                    <label>Number of Connections (M):</label>
+                    <input type="number" id="numConnections" value="5" min="1" max="100">
+                </div>
+                
+                <div class="input-group">
+                    <label>Source Ninja (S):</label>
+                    <input type="number" id="sourceNinja" value="1" min="1">
+                </div>
+                
+                <div class="input-group">
+                    <label>Chakra Links (u v t):</label>
+                    <textarea id="connections" rows="6">1 2 100
+1 3 150
+2 4 200
+3 4 100
+2 3 50</textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label>Query Targets:</label>
+                    <textarea id="queries" rows="3">4
+3</textarea>
+                </div>
+
+                <!-- Chakra Speed Control -->
+                <div class="speed-control">
+                    <label>⚡ Chakra Transmission Speed:</label>
+                    <div class="slider-container">
+                        <span class="speed-value" id="speedValue">1.0x</span>
+                        <input type="range" min="0.1" max="3" step="0.1" value="1" class="speed-slider" id="speedSlider">
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-visualize" id="visualizeBtn">▶ Visualize</button>
+                    <button class="btn-reset" id="resetBtn">↻ Reset</button>
+                </div>
+                
+                <div class="results" id="results" style="display: none;">
+                    <h3>Query Results</h3>
+                    <div id="resultsContent"></div>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <h2>Chakra Distribution Network</h2>
+                <canvas id="canvas" width="900" height="600"></canvas>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #ff8c00;"></div>
+                        <span>Naruto (Source)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #ff6b35;"></div>
+                        <span>Query Target</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #1e90ff;"></div>
+                        <span>Activated Ninja</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #00d4ff;"></div>
+                        <span>Blue Glow = Active Link</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variable for chakra speed
+        let chakraSpeed = 1.0;
+
+        // Debug info
+        const debugInfo = document.getElementById('debugInfo');
+        
+        function updateDebugInfo(message) {
+            debugInfo.textContent = message;
+            console.log(message);
+        }
+
+        // Initialize chakra background particles
+        function initChakraParticles() {
+            const overlay = document.getElementById('chakraOverlay');
+            overlay.innerHTML = '';
+            
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'chakra-particle';
+                
+                const size = Math.random() * 30 + 10;
+                const left = Math.random() * 100;
+                const delay = Math.random() * 6;
+                const duration = Math.random() * 4 + 4;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${left}vw`;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.animationDuration = `${duration}s`;
+                
+                overlay.appendChild(particle);
+            }
+        }
+
+        const japaneseNames = [
+            'Sasuke', 'Sakura', 'Kakashi', 'Hinata', 'Shikamaru', 'Ino', 'Choji',
+            'Rock Lee', 'Neji', 'Tenten', 'Gaara', 'Temari', 'Kankuro', 'Jiraiya',
+            'Tsunade', 'Orochimaru', 'Itachi', 'Kisame', 'Deidara', 'Sasori',
+            'Hidan', 'Kakuzu', 'Konan', 'Pain', 'Minato', 'Kushina', 'Yamato',
+            'Sai', 'Shino', 'Kiba', 'Asuma', 'Kurenai', 'Iruka', 'Anko', 'Guy',
+            'Obito', 'Madara', 'Hashirama', 'Tobirama', 'Hiruzen'
+        ];
+        
+        let currentNames = [];
+        let animationFrame = null;
+        let imagesLoaded = false;
+        
+        const narutoIdleImg = new Image();
+        const narutoActiveImg = new Image();
+        const chakraImg = new Image();
+        
+        // Image loading with error handling
+        let loadedCount = 0;
+        function checkImagesLoaded() {
+            loadedCount++;
+            updateDebugInfo(`Images loaded: ${loadedCount}/3`);
+            
+            if (loadedCount === 3) {
+                imagesLoaded = true;
+                document.getElementById('visualizeBtn').disabled = false;
+                document.getElementById('visualizeBtn').textContent = '▶ Visualize';
+                updateDebugInfo('All images loaded successfully!');
+            }
+        }
+
+        function handleImageError(img, type) {
+            updateDebugInfo(`Failed to load ${type} image, using fallback`);
+            // Create a simple colored circle as fallback
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            if (type === 'naruto') {
+                // Orange circle for Naruto
+                ctx.fillStyle = '#ff8c00';
+                ctx.beginPath();
+                ctx.arc(50, 50, 45, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Naruto', 50, 50);
+            } else {
+                // Yellow circle for chakra
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.arc(50, 50, 45, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            img.src = canvas.toDataURL();
+            checkImagesLoaded();
+        }
+        
+        narutoIdleImg.onload = checkImagesLoaded;
+        narutoActiveImg.onload = checkImagesLoaded;
+        chakraImg.onload = checkImagesLoaded;
+        
+        narutoIdleImg.onerror = () => handleImageError(narutoIdleImg, 'naruto');
+        narutoActiveImg.onerror = () => handleImageError(narutoActiveImg, 'naruto');
+        chakraImg.onerror = () => handleImageError(chakraImg, 'chakra');
+        
+        // Use the provided Naruto image
+        narutoIdleImg.src = 'https://i.redd.it/1bp93qp03vv71.png';
+        narutoActiveImg.src = 'https://i.redd.it/1bp93qp03vv71.png';
+        chakraImg.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiNGRkQ3MDAiLz4KPHBhdGggZD0iTTEyIDJMMTUgOUwyMiAxMkwxNSA5TDEyIDE2TDkgOUwyIDEyTDkgOUwxMiAyWiIgZmlsbD0iI0ZGOEMwMCIvPgo8L3N2Zz4K';
+        
+        function generateNames(n) {
+            const shuffled = [...japaneseNames].sort(() => Math.random() - 0.5);
+            currentNames = shuffled.slice(0, n);
+        }
+        
+        function dijkstra(N, S, edges) {
+            const graph = Array.from({ length: N + 1 }, () => []);
+            edges.forEach(({ u, v, t }) => {
+                graph[u].push([v, t]);
+                graph[v].push([u, t]); // Undirected graph
+            });
+            
+            const minTime = Array(N + 1).fill(Infinity);
+            minTime[S] = 0;
+            const heap = [[0, S]];
+            
+            while (heap.length > 0) {
+                heap.sort((a, b) => a[0] - b[0]);
+                const [currTime, node] = heap.shift();
+                
+                if (currTime > minTime[node]) continue;
+                
+                for (const [neighbor, cost] of graph[node]) {
+                    const newTime = currTime + cost;
+                    if (newTime < minTime[neighbor]) {
+                        minTime[neighbor] = newTime;
+                        heap.push([newTime, neighbor]);
+                    }
+                }
+            }
+            
+            return minTime;
+        }
+        
+        function parseInput() {
+            const N = parseInt(document.getElementById('numNinjas').value);
+            const S = parseInt(document.getElementById('sourceNinja').value);
+            const connections = document.getElementById('connections').value.trim().split('\n');
+            const queries = document.getElementById('queries').value.trim().split('\n').map(Number);
+            
+            const edges = connections.map(line => {
+                const [u, v, t] = line.trim().split(/\s+/).map(Number);
+                return { u, v, t };
+            });
+            
+            return { N, S, edges, queries };
+        }
+        
+        function visualize() {
+            if (!imagesLoaded) {
+                updateDebugInfo('Images still loading, please wait...');
+                return;
+            }
+            
+            updateDebugInfo('Starting visualization...');
+            const { N, S, edges, queries } = parseInput();
+            generateNames(N);
+            
+            const minTime = dijkstra(N, S, edges);
+            
+            const results = queries.map(target => {
+                if (target < 1 || target > N) return { ninja: target, time: 'INVALID' };
+                if (minTime[target] === Infinity) return { ninja: target, time: 'UNREACHABLE' };
+                return { ninja: target, time: minTime[target] };
+            });
+            
+            displayResults(results);
+            animateNetwork(N, S, edges, queries, minTime);
+        }
+        
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsContent.innerHTML = '';
+            results.forEach((result, idx) => {
+                const nameIdx = result.ninja - 1;
+                const name = currentNames[nameIdx] || `Ninja ${result.ninja}`;
+                
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = name + ':';
+                
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'result-time ' + (result.time === 'UNREACHABLE' || result.time === 'INVALID' ? 'error' : 'success');
+                timeSpan.textContent = typeof result.time === 'number' ? `${result.time} ms` : result.time;
+                
+                item.appendChild(nameSpan);
+                item.appendChild(timeSpan);
+                resultsContent.appendChild(item);
+            });
+            
+            resultsDiv.style.display = 'block';
+        }
+        
+        function animateNetwork(N, S, edges, queries, minTime) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas with transparent background
+            ctx.clearRect(0, 0, width, height);
+            
+            const nodes = [];
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) * 0.35;
+            
+            for (let i = 1; i <= N; i++) {
+                if (i === S) {
+                    nodes.push({ id: i, x: centerX, y: centerY });
+                } else {
+                    const angle = ((i - (i > S ? 1 : 0)) / (N - 1)) * Math.PI * 2 - Math.PI / 2;
+                    nodes.push({
+                        id: i,
+                        x: centerX + Math.cos(angle) * radius,
+                        y: centerY + Math.sin(angle) * radius
+                    });
+                }
+            }
+            
+            let frame = 0;
+            const chakraParticles = [];
+            const activatedNodes = new Set([S]);
+            const activeLinks = new Set();
+            let narutoActiveTimer = 0;
+            
+            function animate() {
+                // Clear with transparent background
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw connections
+                edges.forEach(({ u, v, t }) => {
+                    const nodeU = nodes.find(n => n.id === u);
+                    const nodeV = nodes.find(n => n.id === v);
+                    if (!nodeU || !nodeV) return;
+                    
+                    const linkKey = `${u}-${v}`;
+                    const isActive = activeLinks.has(linkKey);
+                    
+                    if (isActive) {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = '#00d4ff';
+                        ctx.strokeStyle = '#00d4ff';
+                        ctx.lineWidth = 4;
+                    } else {
+                        ctx.shadowBlur = 0;
+                        ctx.strokeStyle = 'rgba(255, 140, 0, 0.4)';
+                        ctx.lineWidth = 2;
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(nodeU.x, nodeU.y);
+                    ctx.lineTo(nodeV.x, nodeV.y);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    
+                    const midX = (nodeU.x + nodeV.x) / 2;
+                    const midY = (nodeU.y + nodeV.y) / 2;
+                    ctx.fillStyle = '#ffd700';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(t, midX, midY - 5);
+                });
+                
+                // Update and draw chakra particles with speed control
+                for (let i = chakraParticles.length - 1; i >= 0; i--) {
+                    const p = chakraParticles[i];
+                    p.progress += p.speed * chakraSpeed;
+                    
+                    if (p.progress >= 1) {
+                        activatedNodes.add(p.target);
+                        activeLinks.delete(p.linkKey);
+                        chakraParticles.splice(i, 1);
+                        
+                        edges.forEach(({ u, v, t }) => {
+                            if (u === p.target && !activatedNodes.has(v) && minTime[v] !== Infinity) {
+                                const fromNode = nodes.find(n => n.id === u);
+                                const toNode = nodes.find(n => n.id === v);
+                                if (fromNode && toNode) {
+                                    setTimeout(() => {
+                                        const newLinkKey = `${u}-${v}`;
+                                        activeLinks.add(newLinkKey);
+                                        chakraParticles.push({
+                                            from: fromNode,
+                                            to: toNode,
+                                            target: v,
+                                            progress: 0,
+                                            speed: 0.015,
+                                            linkKey: newLinkKey
+                                        });
+                                    }, t * 0.5 / chakraSpeed);
+                                }
+                            }
+                        });
+                    } else {
+                        const x = p.from.x + (p.to.x - p.from.x) * p.progress;
+                        const y = p.from.y + (p.to.y - p.from.y) * p.progress;
+                        
+                        const size = 30;
+                        ctx.save();
+                        ctx.globalAlpha = 0.9;
+                        ctx.drawImage(chakraImg, x - size/2, y - size/2, size, size);
+                        ctx.restore();
+                    }
+                }
+                
+                const narutoIsActive = narutoActiveTimer > 0;
+                if (narutoActiveTimer > 0) narutoActiveTimer--;
+                
+                // Draw nodes
+                nodes.forEach(node => {
+                    const isSource = node.id === S;
+                    const isQuery = queries.includes(node.id);
+                    const isActivated = activatedNodes.has(node.id);
+                    const isUnreachable = minTime[node.id] === Infinity;
+                    
+                    if (isSource) {
+                        const imgSize = 80;
+                        const imgToDraw = narutoIdleImg;
+                        
+                        if (narutoIsActive) {
+                            const glowSize = 60;
+                            const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowSize);
+                            gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+                            gradient.addColorStop(0.5, 'rgba(255, 140, 0, 0.4)');
+                            gradient.addColorStop(1, 'rgba(255, 69, 0, 0)');
+                            ctx.fillStyle = gradient;
+                            ctx.beginPath();
+                            ctx.arc(node.x, node.y, glowSize, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        
+                        // Draw Naruto image
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(node.x, node.y, imgSize/2, 0, Math.PI * 2);
+                        ctx.closePath();
+                        ctx.clip();
+                        ctx.drawImage(imgToDraw, node.x - imgSize/2, node.y - imgSize/2, imgSize, imgSize);
+                        ctx.restore();
+                        
+                        ctx.strokeStyle = '#ffd700';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.arc(node.x, node.y, imgSize/2, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        ctx.fillStyle = '#ffd700';
+                        ctx.font = 'bold 14px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('Naruto', node.x, node.y + imgSize/2 + 20);
+                    } else {
+                        if (isActivated && !isUnreachable) {
+                            const glowSize = 35;
+                            const pulseSize = Math.sin(frame * 0.05) * 5;
+                            const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowSize + pulseSize);
+                            
+                            if (isQuery) {
+                                gradient.addColorStop(0, 'rgba(255, 100, 0, 0.7)');
+                                gradient.addColorStop(0.5, 'rgba(255, 140, 0, 0.3)');
+                                gradient.addColorStop(1, 'rgba(255, 69, 0, 0)');
+                            } else {
+                                gradient.addColorStop(0, 'rgba(30, 255, 200, 0.6)');
+                                gradient.addColorStop(0.5, 'rgba(30, 200, 255, 0.3)');
+                                gradient.addColorStop(1, 'rgba(0, 150, 255, 0)');
+                            }
+                            
+                            ctx.fillStyle = gradient;
+                            ctx.beginPath();
+                            ctx.arc(node.x, node.y, glowSize + pulseSize, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        
+                        ctx.beginPath();
+                        ctx.arc(node.x, node.y, 22, 0, Math.PI * 2);
+                        
+                        if (isUnreachable) {
+                            ctx.fillStyle = 'rgba(42, 42, 42, 0.8)';
+                            ctx.strokeStyle = '#ff3333';
+                        } else if (isActivated && isQuery) {
+                            ctx.fillStyle = '#ff6b35';
+                            ctx.strokeStyle = '#ff8c42';
+                        } else if (isActivated) {
+                            ctx.fillStyle = '#1e90ff';
+                            ctx.strokeStyle = '#00d4ff';
+                        } else {
+                            ctx.fillStyle = 'rgba(26, 26, 46, 0.8)';
+                            ctx.strokeStyle = '#4a4a5e';
+                        }
+                        
+                        ctx.fill();
+                        ctx.lineWidth = isQuery ? 3 : 2;
+                        ctx.stroke();
+                        
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        const nameIdx = node.id - 1;
+                        const name = currentNames[nameIdx] || `Ninja ${node.id}`;
+                        ctx.fillText(name, node.x, node.y);
+                    }
+                    
+                    if (minTime[node.id] !== Infinity) {
+                        ctx.fillStyle = '#ffd700';
+                        ctx.font = '11px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(`${minTime[node.id]}ms`, node.x, node.y + (isSource ? 55 : 35));
+                    } else if (!isSource) {
+                        ctx.fillStyle = '#ff6b6b';
+                        ctx.font = '10px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('UNREACHABLE', node.x, node.y + 35);
+                    }
+                });
+                
+                frame++;
+                
+                if (chakraParticles.length > 0 || frame < 300) {
+                    animationFrame = requestAnimationFrame(animate);
+                } else {
+                    updateDebugInfo('Animation completed');
+                }
+            }
+            
+            edges.forEach(({ u, v, t }) => {
+                if (u === S && minTime[v] !== Infinity) {
+                    const fromNode = nodes.find(n => n.id === u);
+                    const toNode = nodes.find(n => n.id === v);
+                    if (fromNode && toNode) {
+                        setTimeout(() => {
+                            narutoActiveTimer = 30;
+                            const linkKey = `${u}-${v}`;
+                            activeLinks.add(linkKey);
+                            chakraParticles.push({
+                                from: fromNode,
+                                to: toNode,
+                                target: v,
+                                progress: 0,
+                                speed: 0.015,
+                                linkKey: linkKey
+                            });
+                        }, 500 / chakraSpeed);
+                    }
+                }
+            });
+            
+            animate();
+        }
+        
+        function reset() {
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, height);
+            
+            document.getElementById('results').style.display = 'none';
+            updateDebugInfo('Reset complete');
+        }
+        
+        // Speed slider event listener
+        document.getElementById('speedSlider').addEventListener('input', function() {
+            chakraSpeed = parseFloat(this.value);
+            document.getElementById('speedValue').textContent = chakraSpeed.toFixed(1) + 'x';
+        });
+        
+        document.getElementById('visualizeBtn').addEventListener('click', visualize);
+        document.getElementById('resetBtn').addEventListener('click', reset);
+        
+        document.getElementById('numNinjas').addEventListener('change', function() {
+            generateNames(parseInt(this.value));
+        });
+        
+        // Initialize
+        updateDebugInfo('Initializing...');
+        generateNames(4);
+        initChakraParticles();
+        
+        // Reinitialize particles on resize
+        window.addEventListener('resize', initChakraParticles);
+        
+        // Check if page loaded properly
+        window.addEventListener('load', () => {
+            updateDebugInfo('Page loaded successfully');
+        });
+    </script>
+</body>
+</html>
