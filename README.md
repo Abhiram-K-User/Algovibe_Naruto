@@ -1,7 +1,71 @@
-⚡ Naruto: Nine-Tails Chakra Network Visualizer 🍥The ultimate tool for calculating and visualizing the shortest path of Chakra transmission through a network of allied Ninjas, utilizing Dijkstra's Algorithm.🌟 FeaturesDijkstra's Algorithm Implementation: Calculates the shortest time (weight) for Chakra to travel from a source Ninja (Naruto) to all other Ninjas in the network.Interactive Canvas Visualization: Renders the network graph dynamically, showing the Ninjas (Nodes) and Chakra Links (Edges).Animated Chakra Flow: Visualizes the "activation" process, where Chakra particles traverse the links, illuminating the shortest paths calculated by the algorithm.Configurable Network: Easily adjust the number of Ninjas, connections, source, and query targets via the sidebar inputs.Animation Speed Control: A "Chakra Transmission Speed" slider allows you to control the visualization speed for detailed observation.Themed Design: A visually engaging theme inspired by the Naruto universe, featuring chakra effects and ninja character references.🛠️ Technology StackThis project is a pure front-end application and uses Vanilla Web Technologies:HTML5: For the page structure and user interface elements.CSS3: For styling and dynamic background/particle effects.Vanilla JavaScript (ES6+): For all application logic, including the Dijkstra's algorithm implementation and the Canvas animation engine.HTML5 Canvas API: Used for drawing the dynamic network graph and visualization effects.No external dependencies or Node.js modules are required!🚀 How to RunSince this is a client-side web application, deployment is straightforward:Clone or Download: Get the project files (ensure you have the three files listed below).Ensure File Structure: Make sure all files are in the same directory:index.htmlstyle.cssscript.jsLaunch in Browser: Simply double-click the index.html file. It will open in your default web browser (Chrome, Firefox, Edge, etc.).⚙️ Usage and ConfigurationThe sidebar allows you to define your Chakra Network graph.FieldFormatDescriptionNumber of Ninjas (N)IntegerThe total number of nodes in the graph (e.g., 4). Ninjas are numbered 1 to N.Number of Connections (M)IntegerThe total number of links/edges.Source Ninja (S)IntegerThe node ID representing Naruto, the starting point for Chakra distribution (e.g., 1).Chakra Links (u v t)Line-separated u v t triplesDefines a link between Ninja u and Ninja v with a Chakra transmission time (cost) of t. The graph is undirected.Query TargetsLine-separated IntegersA list of Ninja IDs whose minimum Chakra transmission time from the source you want to calculate.Example Input BreakdownThe default input:// Chakra Links (u v t)
-1 2 100
-1 3 150
-2 4 200
-3 4 100
-2 3 50
-This defines a network where:Link between Ninja 1 and 2 has a cost of 100ms.Link between Ninja 3 and 4 has a cost of 100ms.ControlsVisualize: Executes Dijkstra's algorithm, calculates the shortest paths, displays the results, and starts the animated visualization.Reset: Clears the canvas and hides the results panel, allowing for a new configuration to be tested.Chakra Transmission Speed: Adjusts the multiplier for the animation speed.📁 File Structure
+======================================================
+⚡ Naruto: Nine-Tails Chakra Network Visualizer 🍥
+======================================================
+
+The ultimate tool for calculating and visualizing the shortest path of Chakra transmission through a network of allied Ninjas, utilizing Dijkstra's Algorithm.
+
+--------------------
+🌟 Features
+--------------------
+
+* Dijkstra's Algorithm Implementation: Calculates the shortest time (weight) for Chakra to travel from a source Ninja (Naruto) to all other Ninjas in the network.
+* Interactive Canvas Visualization: Renders the network graph dynamically, showing the Ninjas (Nodes) and Chakra Links (Edges).
+* Animated Chakra Flow: Visualizes the "activation" process, where Chakra particles traverse the links, illuminating the shortest paths calculated by the algorithm.
+* Configurable Network: Easily adjust the number of Ninjas, connections, source, and query targets via the sidebar inputs.
+* Animation Speed Control: A "Chakra Transmission Speed" slider allows you to control the visualization speed for detailed observation.
+* Themed Design: A visually engaging theme inspired by the Naruto universe.
+
+--------------------
+🛠️ Technology Stack
+--------------------
+
+This project is a pure front-end application and uses VANILLA WEB TECHNOLOGIES:
+
+* HTML5: For the page structure and user interface elements.
+* CSS3: For styling and dynamic background/particle effects.
+* Vanilla JavaScript (ES6+): For all application logic, including the Dijkstra's algorithm implementation and the Canvas animation engine.
+* HTML5 Canvas API: Used for drawing the dynamic network graph and visualization effects.
+
+No external dependencies or Node.js modules are required!
+
+--------------------
+🚀 How to Run
+--------------------
+
+Since this is a client-side web application, deployment is straightforward:
+
+1. Clone or Download: Get the project files (index.html, style.css, script.js).
+2. Ensure File Structure: Make sure all files are in the same directory:
+    - index.html
+    - style.css
+    - script.js
+3. Launch in Browser: Simply double-click the index.html file. It will open in your default web browser (Chrome, Firefox, Edge, etc.).
+
+--------------------
+⚙️ Usage and Configuration
+--------------------
+
+The sidebar allows you to define your Chakra Network graph.
+
+FIELD: Number of Ninjas (N)
+DESCRIPTION: The total number of nodes in the graph (e.g., 4). Ninjas are numbered 1 to N.
+
+FIELD: Number of Connections (M)
+DESCRIPTION: The total number of links/edges.
+
+FIELD: Source Ninja (S)
+DESCRIPTION: The node ID representing Naruto, the starting point for Chakra distribution (e.g., 1).
+
+FIELD: Chakra Links (u v t)
+DESCRIPTION: Defines a link between Ninja u and Ninja v with a Chakra transmission time (cost) of t. The graph is undirected. Input format is line-separated "u v t" triples.
+
+FIELD: Query Targets
+DESCRIPTION: A list of Ninja IDs whose minimum Chakra transmission time from the source you want to calculate. Input format is line-separated Ninja IDs.
+
+CONTROLS:
+* Visualize: Executes Dijkstra's algorithm, calculates the shortest paths, and starts the animated visualization.
+* Reset: Clears the canvas and hides the results panel.
+* Chakra Transmission Speed: Adjusts the multiplier for the animation speed.
+
+
+======================================================
